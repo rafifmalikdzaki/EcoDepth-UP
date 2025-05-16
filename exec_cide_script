@@ -1,0 +1,19 @@
+python test_cide.py --image ./scene.jpg --vit_type vit_small_patch16_224 --use_timm
+python test_cide.py --image ./scene.jpg --vit_type vit_base_patch16_224 --use_timm
+python test_cide.py --image ./scene.jpg --vit_type deit_base_patch16_224 --use_timm
+python test_cide.py --image ./scene.jpg --vit_type swin_base_patch4_window7_224 --use_timm
+python test_cide.py --image ./scene.jpg --vit_type gc_vit_base --use_timm
+python test_cide.py --image ./scene.jpg --vit_type convnext_base --use_timm
+python test_cide.py --image ./scene.jpg --vit_type maxvit_base_224 --use_timm
+python test_cide.py --image ./scene.jpg --vit_type mobilevit_s --use_timm
+
+python test_cide.py --image ./scene.jpg --vit_type google/vit-base-patch16-224
+python test_cide.py --image ./scene.jpg --vit_type facebook/deit-base-patch16-224
+python test_cide.py --image ./scene.jpg --vit_type microsoft/beit-base-patch16-224
+python test_cide.py --image ./scene.jpg --vit_type microsoft/swin-base-patch4-window7-224
+python test_cide.py --image ./scene.jpg --vit_type facebook/convnext-base-224
+python test_cide.py --image ./scene.jpg --vit_type microsoft/focalnet-base
+python test_cide.py --image ./scene.jpg --vit_type BAAI/eva-vits
+python test_cide.py --image ./scene.jpg --vit_type google/siglip-base-patch16-224
+python test_cide.py --image ./scene.jpg --vit_type apple/mobilevit-xx-small
+

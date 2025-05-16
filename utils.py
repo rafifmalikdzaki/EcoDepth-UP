@@ -55,6 +55,30 @@ def unpad(image, padding):
     image = image[..., :h-pad_h, :w-pad_w]
     return image
 
+<<<<<<< HEAD
+=======
+def pad_to_make_square(x):
+    """
+    Pads an image tensor to make it square by adding zero-padding to the shorter side.
+    Input:
+        x: torch.Tensor of shape [B, C, H, W], values in [-1, 1]
+    Output:
+        y: torch.Tensor of shape [B, H', W', C] with padding and converted to int
+    """
+    y = 255 * ((x + 1) / 2)  # convert to [0, 255]
+    y = torch.permute(y, (0, 2, 3, 1))  # BCHW → BHWC for image processing
+
+    bs, h, w, c = y.shape
+    if w > h:
+        patch = torch.zeros(bs, w - h, w, c).to(x.device)
+        y = torch.cat([y, patch], dim=1)
+    else:
+        patch = torch.zeros(bs, h - w, h, c).to(x.device)
+        y = torch.cat([y, patch], dim=2)
+
+    return y.to(torch.uint8)
+
+>>>>>>> 1e385dd (Added code)
 #################### Criterion ####################
 
 def silog(pred, target):
