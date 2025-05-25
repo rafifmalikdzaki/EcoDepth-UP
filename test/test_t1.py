@@ -3,10 +3,11 @@ sys.path.append("..")
 from dataset import DepthDataset
 import json
 from torch.utils.data import DataLoader
-from model_t1 import EcoDepth
+from model_t2 import EcoDepth
 import lightning as L
 import torch
 from utils import download_model
+from torchinfo import summary
 class Args:
     def __init__(self):
         with open("test_config.json", "r") as f:
@@ -17,6 +18,7 @@ class Args:
 args = Args()
 
 model = EcoDepth(args)
+summary(model, (3, 480, 640))
 
 if args.ckpt_path == "":
     model_str = f"weights_{args.scene}.ckpt"

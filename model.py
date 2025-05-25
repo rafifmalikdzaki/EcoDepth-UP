@@ -142,7 +142,6 @@ class CIDE(nn.Module):
         
         self.embeddings = nn.Parameter(torch.randn(self.args.no_of_classes, self.dim))
         self.embedding_adapter = EmbeddingAdapter(emb_dim=self.dim)
-        
         self.gamma = nn.Parameter(torch.ones(self.dim) * 1e-4)
     
     def forward(self, x):

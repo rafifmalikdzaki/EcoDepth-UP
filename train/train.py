@@ -3,7 +3,7 @@ sys.path.append("..")
 from dataset import DepthDataset
 import json
 from torch.utils.data import DataLoader
-from model import EcoDepth
+from model_t2 import EcoDepth
 import lightning as L
 from lightning.pytorch.callbacks import ModelCheckpoint
 import torch
@@ -25,7 +25,34 @@ if args.ckpt_path == "":
     download_model(model_str)
     args.ckpt_path = f"../checkpoints/{model_str}"
 
-model.load_state_dict(torch.load(args.ckpt_path, map_location="cpu", weights_only=True)["state_dict"])
+# model.load_state_dict(torch.load(args.ckpt_path, map_location="cpu", weights_only=True)["state_dict"])
+# --- robust checkpoint loader ---------------------------------------------
+ckpt = torch.load(args.ckpt_path, map_location="cpu", weights_only=True)
+
+state = ckpt["state_dict"] if "state_dict" in ckpt else ckpt
+model_state = model.state_dict()
+compatible = {}
+
+for k, v in state.items():
+    # 1) rename legacy embedding_adapter -> adapter
+    if "embedding_adapter" in k:
+        k = k.replace("embedding_adapter", "adapter")
+
+    # 2) discard the old fc.* MLP — not used any more
+    if ".fc." in k and "cide_module.adapter" not in k:
+        continue
+
+    # 3) keep only if the tensor shape matches the current model
+    if k in model_state and v.shape == model_state[k].shape:
+        compatible[k] = v
+    else:
+        print(f"↪︎  skipped {k}  {tuple(v.shape)}")
+
+missing, unexpected = model.load_state_dict(compatible, strict=False)
+print(f"✓ loaded {len(compatible)} tensors "
+      f"(ignored {len(state)-len(compatible)})")
+# ---------------------------------------------------------------------------
+
 
 train_dataset = DepthDataset(
     args=args, 
@@ -58,7 +85,8 @@ trainer = L.Trainer(
     max_epochs=args.epochs,
     val_check_interval=args.val_check_interval,
     log_every_n_steps=10,
-    callbacks=[checkpoint_callback]
+    callbacks=[checkpoint_callback],
+    accumulate_grad_batches=2
 )
 
 trainer.fit(

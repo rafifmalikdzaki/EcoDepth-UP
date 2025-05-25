@@ -35,7 +35,7 @@ class EcoDepthEncoder(nn.Module):
         emb_dim: int = 768,
         args=None,
         train_from_scratch: bool = False,
-        bcb= "facebook/convnext-base-224"
+        bcb= "microsoft/swinv2-base-patch4-window16-256"
     ) -> None:
         super().__init__()
 
@@ -69,9 +69,8 @@ class EcoDepthEncoder(nn.Module):
         self.cide_module = CIDE(
             args,
             emb_dim,
-            train_from_scratch,
+            # train_from_scratch,
             vit_type=getattr(args, "vit_type", bcb),
-            use_timm=getattr(args, "use_timm", False),
         )
 
         # ── Stable‑Diffusion UNet encoder (latent diffusion) ────────────────

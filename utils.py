@@ -55,8 +55,6 @@ def unpad(image, padding):
     image = image[..., :h-pad_h, :w-pad_w]
     return image
 
-<<<<<<< HEAD
-=======
 def pad_to_make_square(x):
     """
     Pads an image tensor to make it square by adding zero-padding to the shorter side.
@@ -77,9 +75,6 @@ def pad_to_make_square(x):
         y = torch.cat([y, patch], dim=2)
 
     return y.to(torch.uint8)
-
->>>>>>> 1e385dd (Added code)
-#################### Criterion ####################
 
 def silog(pred, target):
     # Note that this assumes that the target always has some finite depth (or zero otherwise)

@@ -9,7 +9,7 @@
     "do_random_crop" : false,
     "crop_h" : 480,
     "crop_w" : 640,
-    "batch_size" : 4,
+    "batch_size" : 2,
     "num_workers" : 8,
     "max_depth" : 10.0,
     "no_of_classes" : 100,
@@ -19,6 +19,6 @@
     "scene" : "indoor",
     "epochs" : 25,
     "weight_decay" : 0.1,
-    "lr" : 1e-5,
+    "lr" : 1e-4,
     "val_check_interval" : 200
 }
