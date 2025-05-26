@@ -54,18 +54,17 @@ class BiFPNBlock(nn.Module):
 
         # TODO: Init weights
         self.w1 = nn.Parameter(torch.Tensor(2, 4))
-        self.w1_relu = nn.ReLU()
         self.w2 = nn.Parameter(torch.Tensor(3, 4))
-        self.w2_relu = nn.ReLU()
+
+    def _norm(self, w: torch.Tensor) -> torch.Tensor:
+        w = F.relu(w)
+        return w / (w.sum(dim=0, keepdim=True) + self.epsilon)
 
     def forward(self, inputs):
         p3_x, p4_x, p5_x, p6_x, p7_x = inputs
 
         # Calculate Top-Down Pathway
-        w1 = self.w1_relu(self.w1)
-        w1 /= torch.sum(w1, dim=0) + self.epsilon
-        w2 = self.w2_relu(self.w2)
-        w2 /= torch.sum(w2, dim=0) + self.epsilon
+        w1, w2 = self._norm(self.w1), self._norm(self.w2)
 
         p7_td = p7_x
         p6_td = self.p6_td(w1[0, 0] * p6_x + w1[1, 0] * F.interpolate(p7_td, scale_factor=2))
@@ -113,3 +112,17 @@ class BiFPN(nn.Module):
 
         features = [p3_x, p4_x, p5_x, p6_x, p7_x]
         return self.bifpn(features)
+
+if __name__ == '__main__':
+    import torch, torch.nn.functional as F
+    torch.autograd.set_detect_anomaly(True)
+
+    model = BiFPN(size=[128,256,512], feature_size=64)
+    x = [torch.randn(2,128,64,64, requires_grad=True),
+        torch.randn(2,256,32,32, requires_grad=True),
+        torch.randn(2,512,16,16, requires_grad=True)]
+
+    out = model(x)
+    (loss := sum(o.sum() for o in out)).backward()   # should run clean
+    print("✔ No inplace-grad errors")
+
