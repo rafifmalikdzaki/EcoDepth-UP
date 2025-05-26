@@ -18,7 +18,6 @@ class Args:
 args = Args()
 
 model = EcoDepth(args)
-summary(model, (3, 480, 640))
 
 if args.ckpt_path == "":
     model_str = f"weights_{args.scene}.ckpt"
