@@ -9,6 +9,10 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 import torch
 from utils import download_model
 
+from lightning.pytorch.loggers import WandbLogger
+import wandb
+
+
 class Args:
     def __init__(self):
         with open("train_config.json", "r") as f:
@@ -17,6 +21,12 @@ class Args:
            setattr(self, n, v)
 
 args = Args()
+
+wandb_logger = WandbLogger(
+    project="EcoDepth",  # Change to your project name
+    name=args.experiment_name if hasattr(args, "experiment_name") else None,
+    config=vars(args),   # Logs your Args as hyperparameters
+)
 
 model = EcoDepth(args)
 
@@ -53,6 +63,22 @@ print(f"✓ loaded {len(compatible)} tensors "
       f"(ignored {len(state)-len(compatible)})")
 # ---------------------------------------------------------------------------
 
+modules_to_not_freeze = ["decoder", "cide"]
+
+# Freezing Layers
+
+print("Freezing Layers")
+for param in model.parameters():
+    param.requires_grad = False
+
+
+print("Unfreeze Layer Decoder and CIDE")
+for param in model.decoder.parameters():
+    param.requires_grad = True
+
+for param in model.encoder.cide_module.parameters():
+    param.requires_grad = True
+
 
 train_dataset = DepthDataset(
     args=args, 
@@ -62,7 +88,7 @@ train_dataset = DepthDataset(
     depth_factor=args.train_depth_factor
 )
 
-train_loader = DataLoader(train_dataset, num_workers=args.num_workers, batch_size=args.batch_size)
+train_loader = DataLoader(train_dataset, num_workers=8, batch_size=args.batch_size)
 
 val_dataset = DepthDataset(
     args=args, 
@@ -72,7 +98,7 @@ val_dataset = DepthDataset(
     depth_factor=args.val_depth_factor
 )
 
-val_loader = DataLoader(val_dataset, num_workers=args.num_workers)
+val_loader = DataLoader(val_dataset, num_workers=8)
 
 checkpoint_callback = ModelCheckpoint(
     save_top_k=2,
@@ -82,11 +108,12 @@ checkpoint_callback = ModelCheckpoint(
 )
 
 trainer = L.Trainer(
+    logger=wandb_logger,
     max_epochs=args.epochs,
     val_check_interval=args.val_check_interval,
     log_every_n_steps=10,
     callbacks=[checkpoint_callback],
-    accumulate_grad_batches=2
+    accumulate_grad_batches=4
 )
 
 trainer.fit(

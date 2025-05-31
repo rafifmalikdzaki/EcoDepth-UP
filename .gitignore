@@ -13,3 +13,5 @@ log_dir*
 checkpoints/*
 datasets/*
 **/lightning_logs
+train/EcoDepth/*
+train/wandb/*

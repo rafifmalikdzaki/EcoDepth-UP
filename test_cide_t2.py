@@ -1,8 +1,3 @@
-"""CIDE module with flexible ViT/ConvNeXt backbone and classifier‑safe loading.
-
-This version fixes the **IndentationError** and a stray division in `_prep`.
-"""
-
 from __future__ import annotations
 
 import os
