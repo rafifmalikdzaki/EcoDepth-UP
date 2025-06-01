@@ -73,7 +73,7 @@ print(f"✓ loaded {len(compatible)} tensors "
       f"(ignored {len(state)-len(compatible)})")
 # ---------------------------------------------------------------------------
 
-modules_to_not_freeze = ["decoder", "cide"]
+modules_to_not_freeze = ["decoder", "cide", "last_layer_depth"]
 
 # Freezing Layers
 
@@ -87,6 +87,9 @@ for param in model.decoder.parameters():
     param.requires_grad = True
 
 for param in model.encoder.cide_module.parameters():
+    param.requires_grad = True
+
+for param in model.last_layer_depth.parameters():
     param.requires_grad = True
 
 
