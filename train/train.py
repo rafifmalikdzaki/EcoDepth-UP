@@ -4,13 +4,23 @@ from dataset import DepthDataset
 import json
 from torch.utils.data import DataLoader
 from model_t2 import EcoDepth
+from lightning.pytorch.loggers import WandbLogger
+import wandb
+from ldm.modules.diffusionmodules import util as ldm_util
+# keep reference to the original backward
+_orig_backward = ldm_util.CheckpointFunction.backward
+
+def _safe_backward(ctx, *grad_outputs):
+    # delegate to the real backward but tolerate unused tensors
+    return _orig_backward(ctx, *grad_outputs, allow_unused=True)
+
+ldm_util.CheckpointFunction.backward = _safe_backward
+
 import lightning as L
 from lightning.pytorch.callbacks import ModelCheckpoint
 import torch
 from utils import download_model
 
-from lightning.pytorch.loggers import WandbLogger
-import wandb
 
 
 class Args:

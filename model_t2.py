@@ -103,19 +103,27 @@ class EcoDepthEncoder(nn.Module):
     # ---------------------------------------------------------------------
     #  Forward pass
     # ---------------------------------------------------------------------
+# ───── EcoDepthEncoder.forward  (replace the block between the ✂️ marks) ─────
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Convert RGB image to SD latent space (frozen VQ‑VAE)
+        # Convert RGB image to SD latent space (frozen VQ-VAE)
         with torch.no_grad():
             latents = (
-                self.encoder_vq.encode(x).mode().detach() * self.config.model.params.scale_factor
+                self.encoder_vq.encode(x).mode() *
+                self.config.model.params.scale_factor
             )
 
-        # Scene‑conditioning embedding from CIDE (frozen ViT backbone)
+        # ✂️ ── BEGIN lighter-compromise section ──────────────────────────────
+        latents.requires_grad_(True)       # ① allow autograd to track this leaf
+
+        # Scene-conditioning embedding from CIDE (still frozen)
         conditioning_scene_embedding = self.cide_module(x)
 
-        # SD UNet forward at timestep t=1 (or any placeholder)
+        # SD UNet forward at a fixed timestep
         t = torch.ones((x.shape[0],), device=x.device, dtype=torch.long)
         outs = self.unet(latents, t, context=conditioning_scene_embedding)
+
+        latents.detach_()                  # ② stop grads from flowing into encoder_vq
+        # ✂️ ── END lighter-compromise section ────────────────────────────────
 
         # Fast, lightweight feature aggregation
         feats = [
@@ -125,6 +133,7 @@ class EcoDepthEncoder(nn.Module):
         ]
         x = torch.cat([self.layer1(feats[0]), self.layer2(feats[1]), feats[2]], dim=1)
         return self.out_layer(x)
+
 
 
 # ============================================================================
